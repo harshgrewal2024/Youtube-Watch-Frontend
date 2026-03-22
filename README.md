@@ -15,9 +15,6 @@ https://youtubewatchsystem.netlify.app
 - Backend: Spring Boot + WebSocket
 - Deployment: Netlify + Railway
 
-## 📸 Screenshots
-(Add images)
-
 ## ⚙️ How to Run
 - Clone repo
 - Run backend
