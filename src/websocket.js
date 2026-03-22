@@ -19,7 +19,7 @@ export const connectWebSocket = (roomId, username, onMessage) => {
     return;
   }
 
-  const socket = new SockJS("http://localhost:8080/ws");
+  const socket = new SockJS("https://youtube-watch-backend-production.up.railway.app/ws");
 
   stompClient = new Client({
     webSocketFactory: () => socket,
