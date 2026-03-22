@@ -32,7 +32,7 @@ export default function VideoPlayer({ room, roomId, isHost, userId,setPlayer }) 
             playerInstance.current = event.target;
             isReady.current = true;
 
-           event.target.mute();
+           event.target.unMute();
            setPlayer(event.target)
 
             if (room?.videoId) {
