@@ -1,4 +1,6 @@
 import { useState } from "react";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 export default function Home() {
   const [roomId, setRoomId] = useState("");
@@ -6,23 +8,29 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
 
   const joinRoom = () => {
-    if (!roomId.trim() || !username.trim()) return;
+    if (!username.trim()) {
+      toast.error("Enter username first 😅");
+      return;
+    }
+
+    if (!roomId.trim()) {
+      toast.error("Enter room ID 😅");
+      return;
+    }
 
     setLoading(true);
 
     setTimeout(() => {
       window.location.href = `/room/${roomId.trim()}?username=${encodeURIComponent(
-        username.trim()
+        username.trim(),
       )}`;
     }, 800);
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600">
-
       {/* CARD */}
       <div className="backdrop-blur-lg bg-white/10 border border-white/20 p-8 rounded-2xl shadow-2xl w-80 text-center text-white">
-
         {/* TITLE */}
         <h1 className="text-3xl font-bold mb-6 animate-fadeIn">
           🎬 Watch Party
@@ -37,8 +45,8 @@ export default function Home() {
 
         {/* ROOM ID */}
         <input
-          className="w-full p-3 mb-4 rounded-lg bg-white/20 border border-white/30 placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
-          placeholder="Enter Room ID"
+          className="w-full p-3 mb-4 text-sm rounded-lg bg-white/20 border border-white/30 placeholder-white/90 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
+          placeholder="Enter Room ID (anything you like)"
           onChange={(e) => setRoomId(e.target.value)}
         />
 
@@ -54,7 +62,6 @@ export default function Home() {
         >
           {loading ? "Joining..." : "Join Room"}
         </button>
-
       </div>
     </div>
   );
