@@ -45,8 +45,8 @@ export default function Home() {
 
         {/* ROOM ID */}
         <input
-          className="w-full p-3 mb-4 text-sm rounded-lg bg-white/20 border border-white/30 placeholder-white/90 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
-          placeholder="Enter Room ID (anything you like)"
+          className="w-full p-3 mb-4 rounded-lg bg-white/20 border border-white/30 placeholder-white/90 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
+          placeholder="Enter Room ID"
           onChange={(e) => setRoomId(e.target.value)}
         />
 
