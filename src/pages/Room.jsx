@@ -3,27 +3,45 @@ import { connectWebSocket, sendMessage } from "../websocket";
 import VideoPlayer from "../components/VideoPlayer";
 import Controls from "../components/Controls";
 import Participants from "../components/Participants";
+import Chat from "../components/MyChat"; 
 import toast from "react-hot-toast";
 
 export default function Room() {
   const [room, setRoom] = useState(null);
   const [player, setPlayer] = useState(null);
+  const [chatMessages, setChatMessages] = useState([]); // ✅ CHAT STATE
 
   const roomId = window.location.pathname.split("/")[2];
   const username = new URLSearchParams(window.location.search).get("username");
   const userId = sessionStorage.getItem("userId");
 
-  //  CONNECT
-  useEffect(() => {
-    connectWebSocket(
-      roomId,
-      username,
-      (data) => setRoom(data),
-      () => {
-        sendMessage("/app/join", { roomId, username, userId });
-      }
+  //  CONNECT SOCKET
+ useEffect(() => {
+  connectWebSocket(
+    roomId,
+    username,
+
+    // 🟢 ROOM DATA
+    (data) => {
+      setRoom(data);
+    },
+
+    // 🔥 CHAT DATA
+   (chat) => {
+  setChatMessages((prev) => {
+    const isDuplicate = prev.some(
+      (m) =>
+        m.message === chat.message &&
+        m.username === chat.username
     );
-  }, []);
+
+    if (isDuplicate) return prev; // ❌ skip duplicate
+
+    return [...prev, chat];
+  });
+}
+  );
+}, []);
 
   //  KICK HANDLE
   useEffect(() => {
@@ -42,7 +60,7 @@ export default function Room() {
     }
   }, [room]);
 
-  // CURRENT USER
+  //  CURRENT USER
   const myUser = Object.values(room?.participants || {}).find(
     (p) => p.userId === userId
   );
@@ -50,7 +68,7 @@ export default function Room() {
   const canControl =
     myUser?.role === "HOST" || myUser?.role === "MODERATOR";
 
-  //  LOADER
+  //  LOADING
   if (!room) {
     return (
       <div className="min-h-screen flex items-center justify-center text-white">
@@ -71,7 +89,7 @@ export default function Room() {
           🎬 Room: <span className="text-blue-400">{roomId}</span>
         </h1>
 
-        {/*  LEAVE */}
+        {/* LEAVE */}
         <button
           onClick={() => {
             sendMessage("/app/leave", { roomId, userId });
@@ -88,10 +106,10 @@ export default function Room() {
         </button>
       </div>
 
-      {/*  MAIN LAYOUT */}
+      {/* MAIN */}
       <div className="flex flex-col lg:flex-row gap-8 max-w-7xl mx-auto">
 
-        {/*  VIDEO + CONTROLS */}
+        {/* VIDEO */}
         <div className="flex-1 bg-gradient-to-br from-[#0f172a] to-[#020617] border border-white/10 rounded-3xl p-5 shadow-xl">
 
           <VideoPlayer
@@ -102,7 +120,6 @@ export default function Room() {
             setPlayer={setPlayer}
           />
 
-          {/*  CONTROLS */}
           <Controls
             roomId={roomId}
             userId={userId}
@@ -112,13 +129,24 @@ export default function Room() {
 
         </div>
 
-        {/*  PARTICIPANTS */}
-        <Participants
-          participants={room.participants}
-          myUser={myUser}
-          userId={userId}
-          roomId={roomId}
-        />
+        {/* RIGHT SIDE */}
+        <div className="flex flex-col gap-6 w-full lg:w-80">
+
+          <Participants
+            participants={room.participants}
+            myUser={myUser}
+            userId={userId}
+            roomId={roomId}
+          />
+
+          {/*  CHAT UI */}
+          <Chat
+            roomId={roomId}
+            username={username}
+            messages={chatMessages}
+          />
+
+        </div>
 
       </div>
     </div>

@@ -3,7 +3,7 @@ import { Client } from "@stomp/stompjs";
 
 let stompClient = null;
 
-//  UNIQUE USER ID PER TAB
+// 🔐 UNIQUE USER ID
 let userId = sessionStorage.getItem("userId");
 
 if (!userId) {
@@ -11,32 +11,42 @@ if (!userId) {
   sessionStorage.setItem("userId", userId);
 }
 
-//  CONNECT
-export const connectWebSocket = (roomId, username, onMessage) => {
-  //  avoid multiple connections
-  if (stompClient && stompClient.connected) {
-   
-    return;
-  }
+// 🔗 CONNECT
+export const connectWebSocket = (
+  roomId,
+  username,
+  onRoomMessage,
+  onChatMessage // 🔥 NEW
+) => {
+  if (stompClient && stompClient.connected) return;
 
-  const socket = new SockJS("https://youtube-watch-backend-production.up.railway.app/ws");
+  const socket = new SockJS(
+    "https://youtube-watch-backend-production.up.railway.app/ws"
+  );
 
   stompClient = new Client({
     webSocketFactory: () => socket,
-
-    reconnectDelay: 5000, // auto reconnect
+    reconnectDelay: 5000,
 
     onConnect: () => {
-   
+      console.log("✅ Connected");
 
-      //  SUBSCRIBE FIRST (important)
+      //  ROOM SUBSCRIBE
       stompClient.subscribe(`/topic/room/${roomId}`, (msg) => {
+        
         const data = JSON.parse(msg.body);
-       
-        onMessage(data);
+        console.log("Room:",data);
+        onRoomMessage && onRoomMessage(data);
       });
 
-      //  THEN JOIN (fix timing issue)
+      //  CHAT SUBSCRIBE (FIXED)
+      stompClient.subscribe(`/topic/chat/${roomId}`, (msg) => {
+        
+        const data = JSON.parse(msg.body);
+        onChatMessage && onChatMessage(data);
+      });
+
+      //  JOIN ROOM
       stompClient.publish({
         destination: "/app/join",
         headers: {
@@ -51,26 +61,23 @@ export const connectWebSocket = (roomId, username, onMessage) => {
     },
 
     onStompError: (frame) => {
-     
+      console.error("STOMP ERROR:", frame);
     },
 
     onWebSocketError: (err) => {
-      
+      console.error("WS ERROR:", err);
     },
   });
 
   stompClient.activate();
 };
 
-//  SEND MESSAGE
+//  SEND
 export const sendMessage = (destination, body) => {
   if (!stompClient || !stompClient.connected) {
-   
-
     setTimeout(() => {
       sendMessage(destination, body);
     }, 500);
-
     return;
   }
 
@@ -87,6 +94,5 @@ export const sendMessage = (destination, body) => {
 export const disconnectWebSocket = () => {
   if (stompClient) {
     stompClient.deactivate();
-    
   }
 };
